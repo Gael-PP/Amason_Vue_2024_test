@@ -16,7 +16,11 @@
           </button>
         </div>
       </div>
-      <CarritoItem/>
+      <transition-group name="fade" tag="list">
+        <CarritoItem v-for="(item, index) in cartItems" :key="item.product_id" :product="item"
+          :is-selected="selectedItems[index] || false" @update-selection="updateSelection(index, $event)"
+          ref="cartItem" />
+      </transition-group>
     </div>
     <div class="order">
       <SummaryOrder />
@@ -27,35 +31,48 @@
 <script>
 import CarritoItem from '../../components/CartComponents/CartItem.vue'
 import SummaryOrder from '../../components/CartComponents/SummaryOrder.vue'
-import { mapGetters, mapActions } from 'vuex'
+import { mapGetters } from 'vuex'
 
 export default {
   components: {
     CarritoItem,
     SummaryOrder
   },
+  data() {
+    return {
+      selectedAll: false,
+      selectedItems: [],
+    }
+  },
   computed: {
 
-...mapGetters(['cartItems', 'formattedTotalAmount']),
+    ...mapGetters('cart', ['cartItems', 'formattedTotalAmount']),
+    selectedCount() {
+      return this.selectedItems.filter(item => item).length
+    }
+  },
+  methods: {
 
-},
-methods: {
 
-...mapActions(['fetchCartItems']),
-
-toggleSelectAll() {
-      this.selectedAll = !this.selectedAll
-      this.selectedCount = this.selectedAll ? this.cartItems.length : 0
-      this.$emit('update-selection', this.selectedCount)
-      this.cartItems.forEach((item, index) => {
-        this.$refs[`cartItem${index}`].setSelected(this.selectedAll)
-      })
+    toggleSelectAll() {
+      this.selectedAll = !this.selectedAll;
+      this.selectedItems = this.cartItems.map(() => this.selectedAll);
     },
 
-},
-mounted() {
-this.fetchCartItems();
-},
+    updateSelection(index, isSelected) {
+      this.$set(this.selectedItems, index, isSelected);
+    },
+    deleteSelectedItems() {
+      this.cartItems.forEach((item, index) => {
+        if (this.selectedItems[index]) {
+          this.removeProduct(item.product_id);
+        }
+      });
+      this.selectedItems = [];
+    },
+
+  },
+
 };
 
 </script>
@@ -116,11 +133,11 @@ hr {
   margin-top: 20px;
 }
 
-.body > .container {
+.body>.container {
   flex: 3;
 }
 
-.body > .order {
+.body>.order {
   flex: 1;
 }
 
@@ -156,25 +173,70 @@ hr {
 .delete-btn:hover {
   background-color: #b71c1c;
 }
+
+::view-transition-group {
+  display: block;
+}
+
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.5s ease, transform 0.5s ease;
+}
+
+.fade-enter,
+.fade-leave-to
+
+/* .fade-leave-active en Vue <2.1.8 */
+  {
+  opacity: 0;
+  transform: scale(0.95);
+}
+
 .order-bottom {
   display: none;
 }
+
 @media (max-width: 854px) {
   .body {
     height: 100%;
   }
+
   .order {
-  position: fixed;
-  bottom: 10.8vw;
-  left: 0;
-  width: auto;
-  margin: 0;
-  padding: 0;
-  height: auto;
-  background-color: #e24bb5;
-  box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.1);
-  display: flex;
-  z-index: 2000; 
+    position: fixed;
+    bottom: 10.8vw;
+    left: 0;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    height: auto;
+    background-color: #e24bb5;
+    box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.1);
+    display: flex;
+    z-index: 2000;
   }
+
+  .body {
+    padding: 0;
+    gap: 0px;
+
+  }
+
+  .container {
+    height: 100%;
+  }
+}
+
+@media (max-width: 550px) {
+  .container {
+    display: flex;
+    flex-direction: column;
+    width: 100vw;
+    height: 100%;
+    padding: 12px 0;
+    margin-bottom: 2%;
+    background-color: white;
+
+  }
+
 }
 </style>

@@ -1,6 +1,6 @@
 <template>
-  <div class="details-card" v-for="(product, index) in cartItems" :key="index" >
-    <CarritoCheckbox :checked="selectedAll" @update:checked="updateSelection(index, $event)" />
+  <div class="details-card"  >
+    <CarritoCheckbox :checked="isSelected" @update:checked="updateSelection" />
     <div class="image-card">
       <img
         src="https://www.steren.cr/media/catalog/product/cache/b69086f136192bea7a4d681a8eaf533d/image/21867108a/audifonos-bluetooth-con-cancelacion-de-ruido-negros.jpg">
@@ -10,18 +10,18 @@
         <p>{{ product.product_name }}</p>
       </div>
       <div class="description">
-        <p>Descripción: {{ product.product_description }}</p>
+        <p>{{ product.product_description }}</p>
       </div>
       <div class="bold">
-        <p>Precio: ₡{{ product.product_price }}</p>
+        <p>₡{{ product.product_price }}</p>
       </div>
       <div class="group">
         <div class="quantity">
-          <button class="quantity-btn" @click="decreaseQuantity(index)">-</button>
+          <button class="quantity-btn" @click="decreaseQuantity(product)">-</button>
           <p class="quantity-display">{{ product.quantity }}</p>
-          <button class="quantity-btn" @click="increaseQuantity(index)">+</button>
+          <button class="quantity-btn" @click="increaseQuantity(product)">+</button>
         </div>
-        <button class="btn-delete" @click.prevent="removeProduct(product.product_id)">
+        <button class="btn-delete" @click="removeProduct(product.product_id)">
           <i class="fa-solid fa-trash-can fa-2xl" style="color: #c8240d"></i>
         </button>
       </div>
@@ -29,26 +29,39 @@
   </div>
 </template>
 
+
 <script>
 import CarritoCheckbox from './CheckboxCart.vue'
-import { mapActions, mapGetters } from 'vuex'
+import { mapActions } from 'vuex'
 
 export default {
   components: {
     CarritoCheckbox
   },
-  computed: {
-    ...mapGetters(['cartItems']),
+  props: {
+    product: Object,
+    isSelected: Boolean,
   },
   methods: {
-    ...mapActions(['removeProductFromCart', 'updateProductQuantity']),
-    removeProduct(productId) {
-      this.removeProductFromCart(productId);
+    ...mapActions('cart', ['removeProductFromCart', 'updateProductQuantity']),
+
+    removeProduct(product_Id) {
+      if (confirm('¿Estás seguro de que deseas eliminar este producto?')) {
+        this.removeProductFromCart(product_Id);
+      }
     },
-    updateQuantity(productId, quantity) {
-      const parsedQuantity = parseInt(quantity, 10);
-      if (parsedQuantity > 0) {
-        this.updateProductQuantity({ productId, quantity: parsedQuantity });
+
+    updateSelection() {
+      this.$emit('update-selection', !this.isSelected);
+    },
+
+    increaseQuantity(product) {
+      this.updateProductQuantity({ productId: product.product_id, quantity: product.quantity + 1, action: 'add' });
+    },
+
+    decreaseQuantity(product) {
+      if (product.quantity > 1) {
+        this.updateProductQuantity({ productId: product.product_id, quantity: product.quantity - 1, action: 'remove' });
       }
     },
   },
@@ -97,7 +110,6 @@ export default {
   width: 100%;
   flex-shrink: 0;
   color: #000;
-  font-family: Arial;
   font-size: 18px;
   font-style: normal;
   font-weight: 400;
@@ -108,9 +120,7 @@ export default {
   align-self: flex-start;
   line-height: 140%;
   color: #000;
-  font-family: Inter;
   font-size: 18px;
-  font-style: normal;
   font-weight: 700;
   line-height: 140%;
   text-align: right;
@@ -120,7 +130,6 @@ export default {
   align-self: flex-start;
   line-height: 140%;
   color: #000;
-  font-family: Inter;
   font-size: 14px;
   font-style: normal;
   font-weight: 400;
@@ -129,7 +138,6 @@ export default {
 
 .details-card .description-item .group {
   width: 100%;
-
   align-self: flex-end;
   justify-content: space-between;
   align-items: center;
@@ -153,7 +161,7 @@ export default {
   height: 1vw;
   background: none;
   border: none;
-  font-size: 1vw;
+  font-size: 1.5vw;
   color: #808080;
   cursor: pointer;
 }
@@ -166,7 +174,7 @@ export default {
   cursor: pointer;
 }
 
-@media (min-width: 768px) {
+@media (min-width: 860px) {
   .details-card {
     flex-wrap: nowrap;
     padding: 20px;
@@ -187,13 +195,14 @@ export default {
   }
 
   .details-card .group .quantity {
-    width: 80px;
+    width: 100px;
     height: 40px;
   }
 
   .details-card .group .quantity button.quantity-btn {
     width: 30px;
-    height: 30px;
+    height: 60px;
+   
   }
 
   .description-item .group .btn-delete {
@@ -201,50 +210,47 @@ export default {
   }
 }
 
-@media (max-width: 768px) {
+@media (max-width: 550px) {
+  
   .details-card {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-
-  .details-card .image-card {
-    width: 100%;
-    text-align: center;
+    flex-direction: row;
+    flex-wrap: nowrap;
   }
 
   .details-card .image-card img {
-    width: 100%;
-    max-width: 150px;
-    height: auto;
-  }
+    width: 90px;
+    align-self: flex-start;
+    }
 
   .details-card .description-item {
-    margin-left: 0;
-    width: 100%;
-    padding: 10px 0;
+    margin-left: 10px;
+    height: auto;
+  } 
+
+  .details-card .description-item .description,
+  .details-card .description-item .bold,
+  .details-card .description-item .delivery {
+    font-size: 14px;
+    line-height: 0.1;
+    
   }
 
   .details-card .group .quantity {
-    width: 100%;
-    justify-content: space-between;
+    width: 100px;
+    height: 35px;
+   
   }
 
   .details-card .group .quantity button.quantity-btn {
     width: 30px;
     height: 30px;
-    font-size: 3vw;
-  }
-
-  .description-item .group {
-    flex-direction: column;
-    align-items: flex-start;
-    width: 100%;
-  }
-
-  .description-item .group .btn-delete {
-    align-self: flex-end;
-    order: -1;
-    margin-top: -60px;
-  }
+      font-size: 4.5vw; 
 }
+
+ 
+}
+
+
+
+
 </style>

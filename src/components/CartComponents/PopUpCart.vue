@@ -6,7 +6,14 @@
     </div>
     <hr v-if="cartItems.length > 0">
     <div class="cartItem--container" v-if="cartItems.length > 0">
-      <popUpCartItem/>
+      <transition-group name="fade" tag="list">
+      <popUpCartItem
+        v-for="(product, index) in cartItems"
+        :key="product.product_id"
+        :item="product"
+        :index="index"
+      />
+    </transition-group>
     </div>
     
     <hr v-if="cartItems.length > 0">
@@ -22,7 +29,7 @@
 </template>
 
 <script>
-import { mapGetters, mapActions } from 'vuex';
+import { mapGetters } from 'vuex';
 import popUpCartItem from './PopUpCartItem.vue';
 
 export default {
@@ -31,21 +38,17 @@ export default {
   },
   computed: {
 
-    ...mapGetters(['cartItems', 'formattedTotalAmount']),
+    ...mapGetters('cart', ['cartItems', 'formattedTotalAmount']),
   
   },
   methods: {
-
-    ...mapActions(['fetchCartItems']),
 
     goToCart() {
       this.$router.push('/carrito');
     },
 
   },
-  mounted() {
-    this.fetchCartItems();
-  },
+
 };
 </script>
 
@@ -92,6 +95,14 @@ export default {
   text-align: center;
   margin: 0;
   font-size: .8em;
+}
+
+.fade-enter-active, .fade-leave-active {
+  transition: opacity 0.5s ease, transform 0.5s ease;
+}
+.fade-enter, .fade-leave-to /* .fade-leave-active en Vue <2.1.8 */ {
+  opacity: 0;
+  transform: scale(0.95);
 }
 
 .cart--vacio {

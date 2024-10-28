@@ -10,11 +10,26 @@
   </div>
 </template>
 
-<script setup>
+<script>
 
 import NavBar from '@/components/LayoutComponents/NavBar.vue';
 import FooterLayout from '@/components/LayoutComponents/FooterLayout.vue';
+import { mapActions } from 'vuex';
 
+export default {
+  components: {
+    NavBar,
+    FooterLayout,
+  },
+  
+  methods: {
+    ...mapActions('cart', ['fetchCartItems']),
+  },
+  
+  async created() {
+    await this.fetchCartItems();
+  }
+}
 </script>
 
 <style scoped>

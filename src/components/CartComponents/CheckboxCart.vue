@@ -108,8 +108,8 @@
         --border: #C0C0C0;
         input,
         svg {
-            width: 22px;
-            height: 22px; 
+            width: 19px;
+            height: 19px; 
         }
     }
 }

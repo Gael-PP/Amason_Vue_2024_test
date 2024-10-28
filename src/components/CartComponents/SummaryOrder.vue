@@ -31,22 +31,17 @@
 
 
 <script>
-import { mapGetters } from 'vuex';
+import { mapGetters } from 'vuex'
 
 export default {
   name: 'SummaryOrder',
   computed: {
-    ...mapGetters(['cartItems', 'formattedTotalAmount']),
+    ...mapGetters('cart', ['cartItems', 'formattedTotalAmount'])
   },
-  mounted() {
-    this.fetchCartItems();
-  },
-  methods: {
-    fetchCartItems() {
-      this.$store.dispatch('fetchCartItems');
-    }
-  }
+
+
 };
+
 </script>
 
 <style scoped>
@@ -66,7 +61,8 @@ export default {
   justify-content: space-around;
 }
 
-.information .units, .information .total {
+.information .units,
+.information .total {
   width: 100%;
   display: flex;
   justify-content: space-between;
@@ -81,7 +77,8 @@ export default {
   line-height: 30px;
 }
 
-.information .total .bold, .information .units .bold {
+.information .total .bold,
+.information .units .bold {
   font-size: 18px;
   font-weight: 600;
   color: #111827;
